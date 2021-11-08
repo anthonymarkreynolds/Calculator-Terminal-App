@@ -3,32 +3,31 @@ require 'io/console'
 
 class Model # crunchs numbers
   def initialize
-    @expression = [] # store expression values
-    @syntaxError = false
+    @expression = '' # store expression values
   end
 
   def evaluate # evaluate expression
-
-
-    if @syntaxError
-      "SYNTAX ERROR"
-    end
 
   end
 
   def getExpression
     @expression
-
   end
 
-  def addValue(value)
-    @expression.push(value)
+  def handleInput(value)
+    case value
+      when 'c'
+        @expression = ''
+      when '=','\r'
+        self.evaluate
+      else
+        @expression += value
+    end
   end
 
   def clearValues
     @expresion = []
   end
-
 end
 
 class Controller # handles input
@@ -36,7 +35,7 @@ class Controller # handles input
     @calcModel = model
     @calcView = view
 
-    @validChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','/','.','=','\r','q']
+    @validChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','(',')','%','/','.','=','\r','q','c']
     @exitChars = ['q']
     @state = 'init'
   end
@@ -57,10 +56,10 @@ class Controller # handles input
     isValid = @validChars.include?(inputChar)
 
     if isValid
-      @calcModel.addValue(inputChar)
+      @calcModel.handleInput(inputChar)
     end
 
-    @calcView.render(inputChar, isValid)
+    @calcView.render(inputChar, isValid, @calcModel.getExpression )
 
   end
 
@@ -75,8 +74,12 @@ end
 class View # renders calculator
   def initialize
     @clearCmd = Gem.win_platform? ?  "cls" :  "clear"
+    @calculatorTop =
+'
+ ---------------
+'
     @calculatorFace =
-' ---------------
+'|---------------
 | ( | ) | % | c |
 |---+---+---+---|
 | 7 | 8 | 9 | / |
@@ -95,8 +98,10 @@ class View # renders calculator
     puts "Exiting..."
   end
 
-  def render(inputChar, isValid) # render view
+  def render(inputChar, isValid, expression) # render view
     system @clearCmd
+    print @calculatorTop
+    puts '| ' + expression
     print @calculatorFace
     puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
   end
