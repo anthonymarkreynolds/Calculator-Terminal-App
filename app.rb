@@ -6,7 +6,42 @@ class Model # crunchs numbers
     @expression = '' # store expression values
   end
 
+
   def evaluate # evaluate expression
+
+    # split by non-numbers
+    chunks = @expression.split(/([\+\-\/\(\)%\*])/).reject(&:empty?)
+    puts chunks
+
+
+    tokens = chunks.map do |chunk|
+      type = case chunk
+             when '+'
+               'PLUS'
+             when '-'
+               'MINUS'
+             when '*'
+               'MULTIPLY'
+             when '/'
+               'DIVIDE'
+             when '%'
+               'PERCENT'
+             when '('
+               'OPEN_PAREN'
+             when ')'
+               'CLOSE_PAREN'
+             else
+               'NUM'
+             end
+      {
+        type: type,
+        value: chunk
+      }
+    end
+
+    tokens.each { |token|
+      puts token
+    }
 
   end
 
@@ -23,10 +58,6 @@ class Model # crunchs numbers
       else
         @expression += value
     end
-  end
-
-  def clearValues
-    @expresion = []
   end
 end
 
@@ -100,7 +131,7 @@ class View # renders calculator
   end
 
   def render(inputChar = '', isValid = false, expression = '') # render view
-    system @clearCmd
+    # system @clearCmd
     if inputChar != ''
       puts "#{isValid ? '' : 'Invalid key: ' + inputChar}"
     else
