@@ -65,6 +65,7 @@ class Controller # handles input
 
   def start
     @state = 'running'
+    @calcView.render
     while @state != 'stopped'
       step
     end
@@ -98,12 +99,19 @@ class View # renders calculator
     puts "Exiting..."
   end
 
-  def render(inputChar, isValid, expression) # render view
+  def render(inputChar = '', isValid = false, expression = '') # render view
     system @clearCmd
+    if inputChar != ''
+      puts "#{isValid ? '' : 'Invalid key: ' + inputChar}"
+    else
+      puts "Enter an expression"
+    end
     print @calculatorTop
     puts '| ' + expression
     print @calculatorFace
-    puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
+    puts
+    puts 'Type keys shown above'
+    puts 'q to quit'
   end
 end
 
