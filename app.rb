@@ -1,3 +1,4 @@
+# require 'system'
 require 'io/console'
 
 class Model # crunchs numbers
@@ -21,9 +22,10 @@ end
 
 class Controller # handles input
   def initialize
-    @validInputChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','/','\r','q']
+    @validChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','/','.','=','\r','q']
+    @exitChars = ['q']
     @state = 'init'
-    @CalcUI = View.new
+    @calcUI = View.new
   end
 
   def step
@@ -31,14 +33,15 @@ class Controller # handles input
     # get input character
     inputChar = STDIN.getch
 
-    # validate input
-    isValid = @validInputChars.include?(inputChar)
-
-    if inputChar == 'q'
+    # exit on exit char press
+    if @exitChars.include?(inputChar)
       exit
     end
 
-    @CalcUI.render(inputChar, isValid)
+    # validate input
+    isValid = @validChars.include?(inputChar)
+
+    @calcUI.render(inputChar, isValid)
 
   end
 
@@ -51,14 +54,30 @@ class Controller # handles input
 end
 
 class View # renders calculator
+  def initialize
+    @calculatorFace =
+' ---------------
+| 7 | 8 | 9 | / |
+|---+---+---+---|
+| 4 | 5 | 6 | * |
+|---+---+---+---|
+| 1 | 2 | 3 | - |
+|---+---+---+---|
+| 0 | . | = | + |
+ --------------- '
+
+  end
 
   def render(inputChar, isValid) # render view
-    puts "Keypressed: #{inputChar} was #{isValid ? "valid" : "invalid"}"
+    Gem.win_platform? ? (system "cls") : (system "clear")
+    puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
+    print @calculatorFace
   end
 end
 
-calculatorModel = Model.new
-calculatorControler = Controller.new
-calculatorView = View.new
+def main
+  calcController = Controller.new
+  calcController.start
+end
 
-calculatorControler.start
+main
