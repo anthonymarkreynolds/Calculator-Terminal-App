@@ -4,28 +4,41 @@ require 'io/console'
 class Model # crunchs numbers
   def initialize
     @expression = [] # store expression values
+    @syntaxError = false
   end
 
   def evaluate # evaluate expression
+
+
+    if @syntaxError
+      "SYNTAX ERROR"
+    end
 
   end
 
   def getExpression
     @expression
+
   end
 
   def addValue(value)
     @expression.push(value)
   end
 
+  def clearValues
+    @expresion = []
+  end
+
 end
 
 class Controller # handles input
-  def initialize
+  def initialize(model, view)
+    @calcModel = model
+    @calcView = view
+
     @validChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','/','.','=','\r','q']
     @exitChars = ['q']
     @state = 'init'
-    @calcUI = View.new
   end
 
   def step
@@ -41,7 +54,11 @@ class Controller # handles input
     # validate input
     isValid = @validChars.include?(inputChar)
 
-    @calcUI.render(inputChar, isValid)
+    if isValid
+      @calcModel.addValue(inputChar)
+    end
+
+    @calcView.render(inputChar, isValid)
 
   end
 
@@ -56,7 +73,10 @@ end
 class View # renders calculator
   def initialize
     @calculatorFace =
+
 ' ---------------
+| ( | ) | % | c |
+|---+---+---+---|
 | 7 | 8 | 9 | / |
 |---+---+---+---|
 | 4 | 5 | 6 | * |
@@ -64,19 +84,22 @@ class View # renders calculator
 | 1 | 2 | 3 | - |
 |---+---+---+---|
 | 0 | . | = | + |
- --------------- '
+ ---------------
+'
 
   end
 
   def render(inputChar, isValid) # render view
     Gem.win_platform? ? (system "cls") : (system "clear")
-    puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
     print @calculatorFace
+    puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
   end
 end
 
 def main
-  calcController = Controller.new
+  calcModel = Model.new
+  calcView = View.new
+  calcController = Controller.new(calcModel,calcView)
   calcController.start
 end
 
