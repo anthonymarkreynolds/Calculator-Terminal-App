@@ -48,6 +48,8 @@ class Controller # handles input
 
     # exit on exit char press
     if @exitChars.include?(inputChar)
+      @state = 'stopped'
+      @calcView.exitMessage
       exit
     end
 
@@ -72,8 +74,8 @@ end
 
 class View # renders calculator
   def initialize
+    @clearCmd = Gem.win_platform? ?  "cls" :  "clear"
     @calculatorFace =
-
 ' ---------------
 | ( | ) | % | c |
 |---+---+---+---|
@@ -86,11 +88,15 @@ class View # renders calculator
 | 0 | . | = | + |
  ---------------
 '
+  end
 
+  def exitMessage
+    system @clearCmd
+    puts "Exiting..."
   end
 
   def render(inputChar, isValid) # render view
-    Gem.win_platform? ? (system "cls") : (system "clear")
+    system @clearCmd
     print @calculatorFace
     puts "Keypressed: #{inputChar}, was #{isValid ? "valid" : "invalid"}"
   end
