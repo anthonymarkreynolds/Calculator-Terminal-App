@@ -1,6 +1,33 @@
 # require 'system'
 require 'io/console'
 
+class Node
+
+  attr_reader: :value
+  attr_accessor: :left, :right
+
+  def initialize(value)
+    @value = value
+    @left= nil
+    @rigth = nil
+  end
+
+  def addNode(value)
+    unless @left
+      @left = value
+    else
+      @right = value
+    end
+  end
+
+  def readNode
+    puts @value
+    puts @left
+    puts @right
+  end
+
+end
+
 class Model # crunchs numbers
   def initialize
     @expression = '' # store expression values
@@ -9,11 +36,10 @@ class Model # crunchs numbers
 
   def evaluate # evaluate expression
 
-    # split by non-numbers
+    # split expression string by non-numbers (keeping delimiters)
     chunks = @expression.split(/([\+\-\/\(\)%\*])/).reject(&:empty?)
-    puts chunks
 
-
+    # tokenize chunks
     tokens = chunks.map do |chunk|
       type = case chunk
              when '+'
@@ -31,7 +57,7 @@ class Model # crunchs numbers
              when ')'
                'CLOSE_PAREN'
              else
-               'NUM'
+               'NUMBER'
              end
       {
         type: type,
@@ -39,10 +65,16 @@ class Model # crunchs numbers
       }
     end
 
-    tokens.each { |token|
-      puts token
-    }
-
+    # Build parse tree
+    parseTree = tokens.reduce(Node.new(nil)) do |node, token|
+      case token.type
+      when 'NUMBER'
+        node.addNode(Node.new(token))
+      when 'MULTIPLY','DIVIDE'
+        Node.new(token).addNode(node)
+      end
+    end
+    puts parseTree
   end
 
   def getExpression
