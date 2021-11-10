@@ -53,56 +53,31 @@ def build_expr_tree(expr)
       op_pos = mul && div ? [mul, div].max : mul || div
     end
 
-    # get operator value
-    operator =  expr[op_pos]
-
-    # get left expression value
-    left_expr = build_expr_tree(expr[0..(op_pos - 1)])
-
-    # get right expressino value
-    right_expr = build_expr_tree(expr[(op_pos+1)..-1])
-
-    expr_tree = Tree.new(operator)
-    expr_tree.insert_left(left_expr)
-    expr_tree.insert_right(right_expr)
+    expr_tree = Tree.new(expr[op_pos])
+    expr_tree.insert_left(build_expr_tree(expr[0..(op_pos - 1)]))
+    expr_tree.insert_right( build_expr_tree(expr[(op_pos+1)..-1]))
 
     # return the expression tree root node
-    return expr_tree
 
   # else expr is a number
   else
     return expr
   end
+  expr_tree
 end
 
-def bin_fn(token,a,b)
-  a = a.to_f
-  b = b.to_f
-  case token
-  when '+'
-    a + b
-  when '-'
-    a - b
-  when '*'
-    a * b
-  when '/'
-    a / b
-  else
-    'err'
-  end
-end
 
 def evaluate(expr_tree)
 
-  # if has child nodes (build_expr_tree is a complete tree, so; if one node exists there are two)
-  unless expr_tree.left || expr_tree.right
-
-  # return leaf value as float
+  if expr_tree.left
+    if expr_tree.value == '+'
+      evaluate(expr_tree.left) + evaluate(expr_tree.right)
+    end
   else
-    expr_tree.value
+    return expr_tree.value
   end
 end
 
-test = build_expr_tree(test_expr)
-
-evaluate(test)
+test = build_expr_tree('1+2+3+2')
+test
+# evaluate(test)
