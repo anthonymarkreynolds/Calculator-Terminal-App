@@ -12,7 +12,7 @@ class Model # crunchs numbers
 
   def evaluate # evaluate expression
     result = @calculator.evaluate(@expression)
-    @expression = result ? 'ANS:'+result.to_s : 'SYNTAX ERROR'
+    @expression = result ? 'ANS: '+result.to_s : 'SYNTAX ERROR'
     @state = 'output'
   end
 
