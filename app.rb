@@ -1,13 +1,19 @@
 # require 'system'
 require 'io/console'
+require 'dentaku'
 
 class Model # crunchs numbers
+
   def initialize
     @expression = '' # store expression values
+    @calculator = Dentaku::Calculator.new
+    @state = 'input'
   end
 
   def evaluate # evaluate expression
-
+    result = @calculator.evaluate(@expression)
+    @expression = result ? 'ANS:'+result.to_s : 'SYNTAX ERROR'
+    @state = 'output'
   end
 
   def getExpression
@@ -21,12 +27,17 @@ class Model # crunchs numbers
       when '=','\r'
         self.evaluate
       else
-        @expression += value
+        if @state == 'output'
+          @state = 'input'
+          @expression = value
+        else
+          @expression += value
+        end
     end
   end
 end
 
-class Controller # handles input
+class Controller
   def initialize(model, view)
     @calcModel = model
     @calcView = view
@@ -34,6 +45,7 @@ class Controller # handles input
     @validChars = ['1','2','3','4','5','6','7','8','9','0','+','-','*','(',')','%','/','.','=','\r','q','c']
     @exitChars = ['q']
     @state = 'init'
+    @clearCmd = Gem.win_platform? ?  "cls" :  "clear"
   end
 
   def step
@@ -44,7 +56,8 @@ class Controller # handles input
     # exit on exit char press
     if @exitChars.include?(inputChar)
       @state = 'stopped'
-      @calcView.exitMessage
+      system @clearCmd
+      print @calcView.exitMessage
       exit
     end
 
@@ -55,13 +68,14 @@ class Controller # handles input
       @calcModel.handleInput(inputChar)
     end
 
-    @calcView.render(inputChar, isValid, @calcModel.getExpression )
-
+    system @clearCmd
+    print @calcView.render(inputChar, isValid, @calcModel.getExpression)
   end
 
   def start
     @state = 'running'
-    @calcView.render
+    system @clearCmd
+    print @calcView.render
     while @state != 'stopped'
       step
     end
@@ -70,13 +84,13 @@ end
 
 class View # renders calculator
   def initialize
-    @clearCmd = Gem.win_platform? ?  "cls" :  "clear"
     @calculatorTop =
 '
  ---------------
 '
     @calculatorFace =
-'|---------------
+'
+|---------------
 | ( | ) | % | c |
 |---+---+---+---|
 | 7 | 8 | 9 | / |
@@ -91,23 +105,16 @@ class View # renders calculator
   end
 
   def exitMessage
-    system @clearCmd
-    puts "Exiting..."
+    "Exiting..."
   end
 
   def render(inputChar = '', isValid = false, expression = '') # render view
-    # system @clearCmd
-    if inputChar != ''
-      puts "#{isValid ? '' : 'Invalid key: ' + inputChar}"
-    else
-      puts "Enter an expression"
-    end
-    print @calculatorTop
-    puts '| ' + expression
-    print @calculatorFace
-    puts
-    puts 'Type keys shown above'
-    puts 'q to quit'
+    (inputChar != '' ?
+      "#{isValid ? '' : 'Invalid key: ' + inputChar}"
+    :
+      "Enter an expression"
+    ) + @calculatorTop + '| ' + expression  + @calculatorFace + 'Type keys shown above
+q to quit'
   end
 end
 
